@@ -37,7 +37,11 @@ export function MapScreen({ onScreenChange }: MapScreenProps) {
           onSelectPlace={setSelectedPlaceId}
           showHeatMap={showHeatMap}
         />
-        {showHeatMap && <HeatMapLayer places={filteredPlaces} />}
+        {showHeatMap && (
+          <div className="absolute inset-0 pointer-events-none">
+            <HeatMapLayer places={filteredPlaces} width={window.innerWidth} height={window.innerHeight} />
+          </div>
+        )}
       </div>
 
       {/* Top Control Panel - Glassmorphic */}

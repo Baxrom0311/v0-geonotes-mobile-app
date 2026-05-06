@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Map, List, Plus, Settings } from 'lucide-react';
+import { Map, List, Plus, Settings, BarChart3 } from 'lucide-react';
 
 interface BottomNavProps {
-  currentScreen: 'map' | 'places' | 'add' | 'settings';
-  onScreenChange: (screen: 'map' | 'places' | 'add' | 'settings') => void;
+  currentScreen: 'map' | 'places' | 'add' | 'settings' | 'analytics';
+  onScreenChange: (screen: 'map' | 'places' | 'add' | 'settings' | 'analytics') => void;
 }
 
 export function BottomNav({ currentScreen, onScreenChange }: BottomNavProps) {
@@ -13,6 +13,7 @@ export function BottomNav({ currentScreen, onScreenChange }: BottomNavProps) {
     { id: 'map' as const, icon: Map, label: 'Map' },
     { id: 'places' as const, icon: List, label: 'Places' },
     { id: 'add' as const, icon: Plus, label: 'Add' },
+    { id: 'analytics' as const, icon: BarChart3, label: 'Analytics' },
     { id: 'settings' as const, icon: Settings, label: 'Settings' },
   ];
 

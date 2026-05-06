@@ -3,16 +3,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as BABYLON from 'babylonjs';
 import { Place } from '@/lib/types';
+import { CATEGORY_CONFIG } from '@/lib/constants';
 
 interface Globe3DProps {
   places: Place[];
-  onMarkerClick: (placeId: string) => void;
+  onSelectPlace: (placeId: string | null) => void;
   selectedPlaceId?: string | null;
+  latitude?: number;
+  longitude?: number;
+  showHeatMap?: boolean;
 }
 
-export function Globe3D({ places, onMarkerClick, selectedPlaceId }: Globe3DProps) {
+export function Globe3D({ places, onSelectPlace, selectedPlaceId, showHeatMap }: Globe3DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<BABYLON.Scene | null>(null);
+  const enginesRef = useRef<BABYLON.Engine | null>(null);
+  const markersRef = useRef<Map<string, BABYLON.Mesh>>(new Map());
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -23,88 +29,132 @@ export function Globe3D({ places, onMarkerClick, selectedPlaceId }: Globe3DProps
     if (!isClient || !canvasRef.current) return;
 
     const engine = new BABYLON.Engine(canvasRef.current, true);
+    enginesRef.current = engine;
     const scene = new BABYLON.Scene(engine);
     sceneRef.current = scene;
 
-    scene.clearColor = new BABYLON.Color3(0.059, 0.094, 0.149); // #0f1819
+    // Dark background
+    scene.clearColor = new BABYLON.Color3(0.059, 0.082, 0.114); // Dark navy
     scene.collisionsEnabled = true;
 
-    // Create camera
+    // Create camera with better controls
     const camera = new BABYLON.ArcRotateCamera(
       'camera',
-      Math.PI / 2,
+      Math.PI,
       Math.PI / 2.5,
-      100,
+      80,
       BABYLON.Vector3.Zero(),
       scene
     );
     camera.attachControl(canvasRef.current, true);
-    camera.lowerRadiusLimit = 60;
-    camera.upperRadiusLimit = 200;
+    camera.lowerRadiusLimit = 50;
+    camera.upperRadiusLimit = 180;
     camera.inertia = 0.7;
-    camera.angularSensibilityX = 1000;
-    camera.angularSensibilityY = 1000;
+    camera.speed = 10;
 
-    // Create lighting
-    const light1 = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(1, 1, 1), scene);
-    light1.intensity = 0.8;
+    // Lights
+    const ambientLight = new BABYLON.HemisphericLight('ambient', new BABYLON.Vector3(0, 1, 0), scene);
+    ambientLight.intensity = 0.9;
 
-    const light2 = new BABYLON.PointLight('light2', new BABYLON.Vector3(10, 10, 10), scene);
-    light2.intensity = 0.6;
+    const pointLight = new BABYLON.PointLight('point', new BABYLON.Vector3(50, 50, 50), scene);
+    pointLight.intensity = 0.7;
+    pointLight.range = 500;
 
-    // Create globe
-    const globe = BABYLON.MeshBuilder.CreateSphere('globe', { diameter: 40, segments: 64 }, scene);
+    // Create globe sphere
+    const globe = BABYLON.MeshBuilder.CreateSphere('globe', { diameter: 40, segments: 128 }, scene);
 
-    // Create globe material
-    const globeMaterial = new BABYLON.StandardMaterial('globeMaterial', scene);
-    globeMaterial.emissiveColor = new BABYLON.Color3(0.1, 0.5, 0.8);
-    globeMaterial.alpha = 0.9;
+    const globeMaterial = new BABYLON.StandardMaterial('globeMat', scene);
+    globeMaterial.emissiveColor = new BABYLON.Color3(0.05, 0.3, 0.6);
+    globeMaterial.specularColor = new BABYLON.Color3(0.2, 0.4, 0.8);
+    globeMaterial.alpha = 0.95;
     globe.material = globeMaterial;
 
-    // Add glow layer for globe
+    // Add glow for premium effect
     const glow = new BABYLON.GlowLayer('glow', scene);
     glow.addIncludedOnlyMesh(globe);
-    glow.intensity = 0.5;
+    glow.intensity = 0.8;
 
-    // Create markers for places
-    const markerMeshes: Map<string, BABYLON.Mesh> = new Map();
+    // Create markers
+    markersRef.current.clear();
 
     places.forEach((place) => {
-      // Normalize latitude/longitude to sphere coordinates
       const lat = (place.latitude * Math.PI) / 180;
       const lon = (place.longitude * Math.PI) / 180;
 
-      const x = 20 * Math.cos(lat) * Math.cos(lon);
-      const y = 20 * Math.sin(lat);
-      const z = 20 * Math.cos(lat) * Math.sin(lon);
+      const x = 21 * Math.cos(lat) * Math.cos(lon);
+      const y = 21 * Math.sin(lat);
+      const z = 21 * Math.cos(lat) * Math.sin(lon);
 
-      const marker = BABYLON.MeshBuilder.CreateSphere('marker_' + place.id, { diameter: 2 }, scene);
+      const marker = BABYLON.MeshBuilder.CreateSphere(`marker_${place.id}`, { diameter: 1.5, segments: 32 }, scene);
       marker.position = new BABYLON.Vector3(x, y, z);
 
-      const markerMaterial = new BABYLON.StandardMaterial('markerMat_' + place.id, scene);
-      markerMaterial.emissiveColor = new BABYLON.Color3(0, 0.85, 1); // Cyan
-      marker.material = markerMaterial;
+      const categoryColor = CATEGORY_CONFIG[place.category];
+      const r = parseInt(categoryColor.color.slice(1, 3), 16) / 255;
+      const g = parseInt(categoryColor.color.slice(3, 5), 16) / 255;
+      const b = parseInt(categoryColor.color.slice(5, 7), 16) / 255;
+
+      const markerMat = new BABYLON.StandardMaterial(`markerMat_${place.id}`, scene);
+      markerMat.emissiveColor = new BABYLON.Color3(r, g, b);
+      markerMat.specularColor = new BABYLON.Color3(1, 1, 1);
+      marker.material = markerMat;
 
       glow.addIncludedOnlyMesh(marker);
 
+      // Interaction
       marker.actionManager = new BABYLON.ActionManager(scene);
       marker.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-          onMarkerClick(place.id);
+          onSelectPlace(place.id);
         })
       );
 
-      markerMeshes.set(place.id, marker);
+      // Hover animation
+      let originalScale = 1;
+      marker.actionManager.registerAction(
+        new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+          originalScale = marker.scaling.x;
+          marker.scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
+        })
+      );
+
+      marker.actionManager.registerAction(
+        new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
+          marker.scaling = new BABYLON.Vector3(originalScale, originalScale, originalScale);
+        })
+      );
+
+      markersRef.current.set(place.id, marker);
     });
 
-    // Animation loop
-    let rotationSpeed = 0.0005;
+    // Selected marker highlighting
+    if (selectedPlaceId) {
+      const selectedMarker = markersRef.current.get(selectedPlaceId);
+      if (selectedMarker) {
+        selectedMarker.scaling = new BABYLON.Vector3(2, 2, 2);
+      }
+    }
+
+    // Auto-rotate
+    let autoRotate = true;
+    let rotationSpeed = 0.0002;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === ' ') {
+        autoRotate = !autoRotate;
+      }
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+
+    // Render loop
     engine.runRenderLoop(() => {
-      globe.rotation.y += rotationSpeed;
+      if (autoRotate && !selectedPlaceId) {
+        globe.rotation.y += rotationSpeed;
+      }
       scene.render();
     });
 
-    // Handle window resize
+    // Handle resize
     const handleResize = () => {
       engine.resize();
     };
@@ -113,18 +163,23 @@ export function Globe3D({ places, onMarkerClick, selectedPlaceId }: Globe3DProps
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('keypress', handleKeyPress);
       engine.dispose();
     };
-  }, [isClient, places, onMarkerClick]);
+  }, [isClient, places, onSelectPlace, selectedPlaceId]);
 
   if (!isClient) {
-    return <div className="w-full h-full bg-gradient-to-b from-slate-900 to-slate-950 animate-pulse" />;
+    return (
+      <div className="w-full h-full bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="text-muted-foreground text-sm">Loading globe...</div>
+      </div>
+    );
   }
 
   return (
     <canvas
       ref={canvasRef}
-      className="w-full h-full rounded-lg"
+      className="w-full h-full"
       style={{ display: 'block' }}
     />
   );
