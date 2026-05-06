@@ -17,16 +17,16 @@ export function BottomNav({ currentScreen, onScreenChange }: BottomNavProps) {
   ];
 
   return (
-    <nav className="border-t border-gray-200 bg-white">
+    <nav className="border-t border-white/10 bg-black/30 backdrop-blur-[10px]">
       <div className="flex items-center justify-around h-16">
         {tabs.map(({ id, icon: Icon, label }) => (
           <button
             key={id}
             onClick={() => onScreenChange(id)}
-            className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+            className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 ${
               currentScreen === id
-                ? 'text-blue-600 bg-blue-50'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-cyan-400 bg-gradient-to-t from-cyan-500/20 to-transparent premium-glow'
+                : 'text-muted-foreground hover:text-cyan-300'
             }`}
             aria-label={label}
           >

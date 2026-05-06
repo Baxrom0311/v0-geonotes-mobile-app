@@ -4,6 +4,7 @@ import React, { useState, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useGeoNotesStore } from '@/hooks/useGeoNotesStore.tsx';
 import { MapView } from '@/components/ui/MapView';
+import { GlassmorphCard } from '@/components/ui/GlassmorphCard';
 import { CategoryBadge } from '@/components/ui/CategoryBadge';
 import { CATEGORY_CONFIG } from '@/lib/constants';
 import { CategoryType } from '@/lib/types';
@@ -86,24 +87,24 @@ export function AddPlaceScreen({ onScreenChange }: AddPlaceScreenProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4 flex items-center gap-3">
+      <GlassmorphCard className="rounded-none p-4 flex items-center gap-3 border-b">
         <button
           onClick={() => onScreenChange('places')}
-          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-1 hover:bg-white/10 rounded-full transition-colors"
         >
-          <ArrowLeft size={20} className="text-gray-600" />
+          <ArrowLeft size={20} className="text-cyan-400" />
         </button>
-        <h1 className="text-xl font-bold text-gray-900">Add New Place</h1>
-      </div>
+        <h1 className="text-xl font-bold text-foreground">Add New Place</h1>
+      </GlassmorphCard>
 
       {/* Form */}
       <div className="flex-1 overflow-y-auto">
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
+          <GlassmorphCard className="p-4 space-y-2">
+            <label className="block text-sm font-medium text-foreground">
               Title
             </label>
             <Input
@@ -114,14 +115,14 @@ export function AddPlaceScreen({ onScreenChange }: AddPlaceScreenProps) {
                 setFormData({ ...formData, title: e.target.value });
                 if (errors.title) setErrors({ ...errors, title: '' });
               }}
-              className={errors.title ? 'border-red-500' : ''}
+              className={`bg-black/30 border ${errors.title ? 'border-red-500' : 'border-cyan-500/30'} text-foreground placeholder-muted-foreground focus:ring-cyan-500`}
             />
-            {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
-          </div>
+            {errors.title && <p className="text-red-400 text-xs">{errors.title}</p>}
+          </GlassmorphCard>
 
           {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
+          <GlassmorphCard className="p-4 space-y-2">
+            <label className="block text-sm font-medium text-foreground">
               Description
             </label>
             <Textarea
@@ -129,16 +130,17 @@ export function AddPlaceScreen({ onScreenChange }: AddPlaceScreenProps) {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
+              className="bg-black/30 border border-cyan-500/30 text-foreground placeholder-muted-foreground focus:ring-cyan-500"
             />
-          </div>
+          </GlassmorphCard>
 
           {/* Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
+          <GlassmorphCard className="p-4 space-y-2">
+            <label className="block text-sm font-medium text-foreground">
               Category
             </label>
             <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value as CategoryType })}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-black/30 border border-cyan-500/30 text-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -151,12 +153,12 @@ export function AddPlaceScreen({ onScreenChange }: AddPlaceScreenProps) {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </GlassmorphCard>
 
           {/* Location */}
-          <div className="space-y-3">
+          <GlassmorphCard className="p-4 space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Latitude
               </label>
               <Input
@@ -165,10 +167,11 @@ export function AddPlaceScreen({ onScreenChange }: AddPlaceScreenProps) {
                 value={formData.latitude}
                 onChange={(e) => setFormData({ ...formData, latitude: parseFloat(e.target.value) })}
                 placeholder="0.0000"
+                className="bg-black/30 border border-cyan-500/30 text-foreground placeholder-muted-foreground focus:ring-cyan-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Longitude
               </label>
               <Input
@@ -177,23 +180,23 @@ export function AddPlaceScreen({ onScreenChange }: AddPlaceScreenProps) {
                 value={formData.longitude}
                 onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) })}
                 placeholder="0.0000"
+                className="bg-black/30 border border-cyan-500/30 text-foreground placeholder-muted-foreground focus:ring-cyan-500"
               />
             </div>
-            {errors.location && <p className="text-red-500 text-xs">{errors.location}</p>}
+            {errors.location && <p className="text-red-400 text-xs">{errors.location}</p>}
             <Button
               type="button"
-              variant="outline"
-              className="w-full"
               onClick={handleUseCurrentLocation}
+              className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
             >
               <MapPin size={16} className="mr-2" />
               Use Current Location
             </Button>
-          </div>
+          </GlassmorphCard>
 
           {/* Map preview */}
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">
+          <GlassmorphCard className="p-4 space-y-2">
+            <label className="block text-sm font-medium text-foreground">
               Location Preview
             </label>
             <MapView latitude={formData.latitude} longitude={formData.longitude} height="h-40">
@@ -201,10 +204,10 @@ export function AddPlaceScreen({ onScreenChange }: AddPlaceScreenProps) {
                 <DynamicMarker position={[formData.latitude, formData.longitude]} />
               </Suspense>
             </MapView>
-          </div>
+          </GlassmorphCard>
 
           {/* Submit button */}
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+          <Button type="submit" className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:shadow-lg hover:shadow-cyan-500/50 transition-all font-semibold">
             Save Place
           </Button>
         </form>
