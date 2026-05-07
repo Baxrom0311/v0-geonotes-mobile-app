@@ -5,6 +5,7 @@ import { Globe3D } from '@/components/ui/Globe3D';
 import { GlassmorphCard } from '@/components/ui/GlassmorphCard';
 import { HeatMapLayer } from '@/components/ui/HeatMapLayer';
 import { MarkerCluster } from '@/components/ui/MarkerCluster';
+import { LocationStatus } from '@/components/ui/LocationStatus';
 import { useGeoNotesStore } from '@/hooks/useGeoNotesStore.tsx';
 import { CATEGORY_CONFIG } from '@/lib/constants';
 import { CategoryType } from '@/lib/types';
@@ -137,6 +138,12 @@ export function MapScreen({ onScreenChange }: MapScreenProps) {
 
       {/* Right Side Panel - Stats and Controls */}
       <div className="absolute right-4 top-4 z-20 flex flex-col gap-3">
+        {/* Location Status */}
+        <div className="w-80">
+          <LocationStatus />
+        </div>
+
+        {/* Statistics */}
         <GlassmorphCard className="p-4 space-y-2 min-w-[200px]">
           <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Statistics</div>
           <div className="space-y-1.5">

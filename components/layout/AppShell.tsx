@@ -8,6 +8,7 @@ import { AddPlaceScreen } from '@/components/screens/AddPlaceScreen';
 import { SettingsScreen } from '@/components/screens/SettingsScreen';
 import { AnalyticsScreen } from '@/components/screens/AnalyticsScreen';
 import { OfflineIndicator } from '@/components/ui/OfflineIndicator';
+import { LocationInitializer } from '@/components/ui/LocationInitializer';
 
 type ScreenType = 'map' | 'places' | 'add' | 'settings' | 'analytics';
 
@@ -16,6 +17,9 @@ export function AppShell() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
+      {/* Location tracking initializer */}
+      <LocationInitializer />
+
       {/* Main content area */}
       <div className="flex-1 overflow-hidden">
         {currentScreen === 'map' && <MapScreen />}
