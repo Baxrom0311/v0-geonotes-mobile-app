@@ -128,6 +128,19 @@
   }
 }
 
+/* Leaflet map styles */
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content {
+  font-size: 14px;
+}
+
+.custom-marker {
+  filter: drop-shadow(0 0 3px rgba(0, 217, 255, 0.3));
+}
+
 @layer utilities {
   .glassmorphism {
     @apply bg-white/10 backdrop-blur-[10px] border border-white/20;

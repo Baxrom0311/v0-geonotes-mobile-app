@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { InteractiveMap } from '@/components/ui/InteractiveMap';
 import { Globe3D } from '@/components/ui/Globe3D';
 import { GlassmorphCard } from '@/components/ui/GlassmorphCard';
 import { HeatMapLayer } from '@/components/ui/HeatMapLayer';
@@ -9,9 +10,9 @@ import { LocationStatus } from '@/components/ui/LocationStatus';
 import { useGeoNotesStore } from '@/hooks/useGeoNotesStore.tsx';
 import { CATEGORY_CONFIG } from '@/lib/constants';
 import { CategoryType } from '@/lib/types';
-import { Search, Filter, Layers, Eye, EyeOff } from 'lucide-react';
+import { Search, Filter, Layers, Eye, EyeOff, Globe, Map } from 'lucide-react';
 
-type MapMode = 'globe' | 'heatmap' | 'cluster';
+type MapMode = 'satellite' | 'street';
 
 interface MapScreenProps {
   onScreenChange?: (screen: 'map' | 'places' | 'add' | 'settings') => void;
@@ -19,7 +20,7 @@ interface MapScreenProps {
 
 export function MapScreen({ onScreenChange }: MapScreenProps) {
   const { places, currentLocation, filteredPlaces, selectedCategory, setSelectedCategory, searchQuery, setSearchQuery } = useGeoNotesStore();
-  const [mapMode, setMapMode] = useState<MapMode>('globe');
+  const [mapMode, setMapMode] = useState<MapMode>('street');
   const [showCategoryFilter, setShowCategoryFilter] = useState(false);
   const [showHeatMap, setShowHeatMap] = useState(false);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
@@ -28,21 +29,15 @@ export function MapScreen({ onScreenChange }: MapScreenProps) {
 
   return (
     <div className="h-full w-full bg-background relative overflow-hidden">
-      {/* Main Globe */}
+      {/* Main Map */}
       <div className="absolute inset-0">
-        <Globe3D
+        <InteractiveMap
           latitude={currentLocation.latitude}
           longitude={currentLocation.longitude}
           places={filteredPlaces}
           selectedPlaceId={selectedPlaceId}
           onSelectPlace={setSelectedPlaceId}
-          showHeatMap={showHeatMap}
         />
-        {showHeatMap && (
-          <div className="absolute inset-0 pointer-events-none">
-            <HeatMapLayer places={filteredPlaces} width={window.innerWidth} height={window.innerHeight} />
-          </div>
-        )}
       </div>
 
       {/* Top Control Panel - Glassmorphic */}
@@ -164,6 +159,19 @@ export function MapScreen({ onScreenChange }: MapScreenProps) {
           </div>
         </GlassmorphCard>
 
+        {/* Map View Toggle */}
+        <button
+          onClick={() => setMapMode(mapMode === 'street' ? 'satellite' : 'street')}
+          className="p-3 bg-black/30 border border-cyan-500/30 rounded-lg hover:bg-black/40 transition-all premium-glow group"
+          title={`Switch to ${mapMode === 'street' ? 'satellite' : 'street'} view`}
+        >
+          {mapMode === 'street' ? (
+            <Map size={20} className="text-cyan-400 group-hover:text-cyan-300" />
+          ) : (
+            <Globe size={20} className="text-cyan-400 group-hover:text-cyan-300" />
+          )}
+        </button>
+
         {/* Heat Map Toggle */}
         <button
           onClick={() => setShowHeatMap(!showHeatMap)}
@@ -178,7 +186,7 @@ export function MapScreen({ onScreenChange }: MapScreenProps) {
 
         {/* Layers Toggle */}
         <button
-          onClick={() => setMapMode(mapMode === 'globe' ? 'heatmap' : 'globe')}
+          onClick={() => setMapMode(mapMode === 'street' ? 'satellite' : 'street')}
           className="p-3 bg-black/30 border border-cyan-500/30 rounded-lg hover:bg-black/40 transition-all premium-glow group"
         >
           <Layers size={20} className="text-cyan-400 group-hover:text-cyan-300" />
